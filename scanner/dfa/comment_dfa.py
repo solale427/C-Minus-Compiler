@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
 
 class CommentFinalNode(Node):
     def get_return_value(self, scanner: "Scanner"):
-        return Token(token_type=TokenType.COMMENT, token_string=scanner.get_lexeme())
+        return Token(token_type=TokenType.COMMENT, token_string=self.get_lexeme_from_scanner(scanner))
 
 
 class UnclosedCommentNode(Node):

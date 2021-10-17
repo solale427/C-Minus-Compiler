@@ -45,6 +45,9 @@ class Node:
         else:
             return InvalidNode()
 
+    def get_lexeme_from_scanner(self, scanner: "Scanner"):
+        pass
+
     def get_return_value(self, scanner: "Scanner"):
         assert self.is_end_node
         raise NotImplementedError

@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
 class WhiteSpaceFinalNode(Node):
 
     def get_return_value(self, scanner: "Scanner"):
-        return Token(token_type=TokenType.WHITE_SPACE, token_string=scanner.get_lexeme())
+        return Token(token_type=TokenType.WHITE_SPACE, token_string=self.get_lexeme_from_scanner(scanner))
 
 
 def white_space_dfa():

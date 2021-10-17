@@ -4,13 +4,8 @@ from .token import TokenType
 
 
 class SymbolTable:
-    __instance = None
 
     def __init__(self):
-        if SymbolTable.__instance is not None:
-            raise Exception("This class is a singleton!")
-        else:
-            SymbolTable.__instance = self
         self.d = OrderedDict()
 
     def add_keyword(self, keyword):
