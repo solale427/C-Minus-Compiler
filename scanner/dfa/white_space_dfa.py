@@ -1,3 +1,4 @@
+from scanner.dfa.edge import white_spaces
 from scanner.dfa.node import Node
 from scanner.token import Token, TokenType
 from scanner.scanner import Scanner
@@ -11,3 +12,4 @@ class WhiteSpaceFinalNode(Node):
 
 def white_space_dfa():
     node_14 = WhiteSpaceFinalNode(identifier=14)
+    return white_spaces(destination=node_14)

@@ -1,7 +1,6 @@
 from .dfa.comment_dfa import comment_dfa
-from .dfa.edge import generate_edges, digits, letters, SYMBOLS, white_spaces
 from .dfa.id_keyword_dfa import id_keyword_dfa
-from .dfa.node import Node, NodeManager
+from .dfa.node import Node
 from .dfa.num_dfa import num_dfa
 from .dfa.symbol_dfa import symbol_dfa
 from .dfa.white_space_dfa import white_space_dfa
@@ -9,20 +8,8 @@ from .symbol_table import SymbolTable
 
 
 def c_minus_dfa():
-    num_dfa()
-    id_keyword_dfa()
-    symbol_dfa()
-    comment_dfa()
-    white_space_dfa()
     initial_node = Node(identifier=0)
-    initial_node.edges_dict = digits(destination=NodeManager.get_node(node_id=0)) + letters(
-        destination=NodeManager.get_node(node_id=3)) + generate_edges(
-        destination=NodeManager.get_node(node_id=5), characters_to_include=SYMBOLS,
-        characters_to_exclude=['=', '*']
-    ) + generate_edges(destination=NodeManager.get_node(node_id=6), characters_to_include=['=']) + generate_edges(
-        destination=NodeManager.get_node(node_id=15), characters_to_include=['*']) + generate_edges(
-        destination=NodeManager.get_node(node_id=9), characters_to_include=['/']) + white_spaces(
-        destination=NodeManager.get_node(node_id=14))
+    initial_node.edges = num_dfa() + id_keyword_dfa() + symbol_dfa() + comment_dfa() + white_space_dfa()
 
 
 class Scanner:

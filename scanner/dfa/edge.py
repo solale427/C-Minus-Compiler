@@ -8,14 +8,17 @@ WHITE_SPACES = [chr(32), chr(10), chr(13), chr(9), chr(11), chr(12)]
 KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
 
+class EOF:
+    pass
+
+
 class Edge:
-    def __init__(self, destination, character):
-        from .node import NodeManager
-        self.destination = NodeManager.get_node(destination)
+    def __init__(self, destination: Node, character):
+        self.destination = destination
         self.character = character
 
 
-def generate_edges(destination, characters_to_include, characters_to_exclude=[]):
+def generate_edges(destination: Node, characters_to_include, characters_to_exclude=[]):
     return [Edge(destination, character) for character in characters_to_include
             if character not in characters_to_exclude]
 

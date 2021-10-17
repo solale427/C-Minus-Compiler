@@ -23,8 +23,9 @@ def num_dfa():
     node_1 = Node(identifier=2)
     node_2 = FinalNUMNode(identifier=2, is_end_node=True)
     invalid_number = InvalidNumberNode()
-    node_1.set_edges_dict = digits(destination=node_1) + \
-                            letters(invalid_number) + \
-                            generate_edges(destination=node_2,
-                                           characters_to_include=ALL_CHARACTERS,
-                                           characters_to_exclude=DIGIT_CHARACTERS + LETTER_CHARACTERS)
+    node_1.edges = digits(destination=node_1) + letters(invalid_number) + generate_edges(
+        destination=node_2,
+        characters_to_include=ALL_CHARACTERS,
+        characters_to_exclude=DIGIT_CHARACTERS + LETTER_CHARACTERS
+    )
+    return digits(destination=node_1)

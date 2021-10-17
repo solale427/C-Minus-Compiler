@@ -1,4 +1,4 @@
-from scanner.dfa.edge import generate_edges, ALL_CHARACTERS
+from scanner.dfa.edge import generate_edges, ALL_CHARACTERS, EOF
 from scanner.dfa.errors import LexicalError
 from scanner.dfa.node import Node
 from scanner.scanner import Scanner
@@ -25,18 +25,49 @@ def comment_dfa():
     node_12 = Node(identifier=12)
     node_13 = CommentFinalNode(identifier=13, is_end_node=True)
     unclosed_comment = UnclosedCommentNode()
-    node_9.edges_dict = generate_edges(destination=node_10, characters_to_include=['*']) + generate_edges(
-        destination=node_12, characters_to_include=['/'])
-    node_10.edges_dict = generate_edges(destination=node_10, characters_to_include=ALL_CHARACTERS,
-                                        characters_to_exclude=['*']) + generate_edges(destination=node_11,
-                                                                                      characters_to_include=['*'])
-    node_11.edges_dict = generate_edges(destination=node_11, characters_to_include=['*']) + generate_edges(
-        destination=node_13, characters_to_include=['/']) + generate_edges(destination=unclosed_comment,
-                                                                           characters_to_include=[
-                                                                               'eof']) + generate_edges(
+    node_9.edges = generate_edges(
+        destination=node_10,
+        characters_to_include=['*']
+    ) + generate_edges(
+        destination=node_12,
+        characters_to_include=['/']
+    )
+    node_10.edges = generate_edges(
+        destination=node_10,
+        characters_to_include=ALL_CHARACTERS,
+        characters_to_exclude=['*']
+    ) + generate_edges(
+        destination=node_11,
+        characters_to_include=['*']
+    )
+    node_11.edges = generate_edges(
+        destination=node_11,
+        characters_to_include=['*']
+    ) + generate_edges(
+        destination=node_13,
+        characters_to_include=['/']
+    ) + generate_edges(
+        destination=unclosed_comment,
+        characters_to_include=[EOF]
+    ) + generate_edges(
         destination=node_10,
         characters_to_include=ALL_CHARACTERS,
         characters_to_exclude=[
-            '*', '/', 'eof'])
-    node_12.edges_dict = generate_edges(destination=node_13, characters_to_include=['\n', '']) + generate_edges(
-        destination=node_12, characters_to_include=ALL_CHARACTERS, characters_to_exclude=['\n', ''])
+            '*',
+            '/',
+            EOF
+        ]
+    )
+    node_12.edges = generate_edges(
+        destination=node_13,
+        characters_to_include=['\n', EOF]
+    ) + generate_edges(
+        destination=node_12,
+        characters_to_include=ALL_CHARACTERS,
+        characters_to_exclude=['\n', EOF]
+    )
+
+    return generate_edges(
+        destination=node_9,
+        characters_to_include=['/']
+    )

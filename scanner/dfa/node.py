@@ -27,21 +27,21 @@ class Node:
 
         self.id = identifier
         self.is_end_node = is_end_node
-        self._edges_dict = {}
+        self._edges = {}
         self.has_lookahead = has_lookahead
         NodeManager.add_node(self)
 
     @property
-    def edges_dict(self):
-        return self._edges_dict
+    def edges(self):
+        return self._edges
 
-    @edges_dict.setter
-    def edges_dict(self, edges: ["Edge"]):
-        self._edges_dict = {edge.character: edge for edge in edges}
+    @edges.setter
+    def edges(self, edges: typing.List["Edge"]):
+        self._edges = {edge.character: edge for edge in edges}
 
     def move(self, character):
-        if character in self.edges_dict:
-            return self.edges_dict[character].destination
+        if character in self.edges:
+            return self.edges[character].destination
         else:
             return InvalidNode()
 
