@@ -2,9 +2,12 @@ from enum import Enum, auto
 
 
 class TokenType(Enum):
-    SYMBOL = auto()
-    KEYWORD = auto()
+    NUM = auto()
     ID = auto()
+    KEYWORD = auto()
+    SYMBOL = auto()
+    COMMENT = auto()
+    WHITE_SPACE = auto()
 
 
 class Token:

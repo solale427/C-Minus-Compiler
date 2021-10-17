@@ -4,6 +4,7 @@ from .token import TokenType
 
 
 class SymbolTable:
+
     def __init__(self):
         self.d = OrderedDict()
 
