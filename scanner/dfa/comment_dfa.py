@@ -1,8 +1,12 @@
+import typing
+
 from scanner.dfa.edge import generate_edges, ALL_CHARACTERS, EOF
 from scanner.dfa.errors import LexicalError
 from scanner.dfa.node import Node
-from scanner.scanner import Scanner
 from scanner.token import Token, TokenType
+
+if typing.TYPE_CHECKING:
+    from ..scanner import Scanner
 
 
 class CommentFinalNode(Node):

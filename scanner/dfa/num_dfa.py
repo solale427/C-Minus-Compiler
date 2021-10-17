@@ -1,8 +1,12 @@
+import typing
+
 from .edge import generate_edges, digits, letters, ALL_CHARACTERS, LETTER_CHARACTERS, DIGIT_CHARACTERS
 from .errors import LexicalError
 from .node import Node
-from ..scanner import Scanner
 from ..token import Token, TokenType
+
+if typing.TYPE_CHECKING:
+    from ..scanner import Scanner
 
 
 class FinalNUMNode(Node):

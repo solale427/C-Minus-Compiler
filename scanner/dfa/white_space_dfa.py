@@ -1,7 +1,11 @@
+import typing
+
 from scanner.dfa.edge import white_spaces
 from scanner.dfa.node import Node
 from scanner.token import Token, TokenType
-from scanner.scanner import Scanner
+
+if typing.TYPE_CHECKING:
+    from ..scanner import Scanner
 
 
 class WhiteSpaceFinalNode(Node):

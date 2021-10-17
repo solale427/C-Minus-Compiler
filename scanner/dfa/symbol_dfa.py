@@ -1,8 +1,12 @@
+import typing
+
 from scanner.dfa.edge import generate_edges, ALL_CHARACTERS, SYMBOLS
 from scanner.dfa.errors import LexicalError
 from scanner.dfa.node import Node
 from scanner.token import Token, TokenType
-from scanner.scanner import Scanner
+
+if typing.TYPE_CHECKING:
+    from ..scanner import Scanner
 
 
 class SymbolFinalNode(Node):
