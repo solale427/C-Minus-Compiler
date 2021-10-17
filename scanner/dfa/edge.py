@@ -3,7 +3,7 @@ from scanner.dfa.node import Node
 ALL_CHARACTERS = [chr(i) for i in range(32, 127)]
 DIGIT_CHARACTERS = list(range(10))
 LETTER_CHARACTERS = list(map(chr, range(97, 123))) + list(map(chr, range(65, 91)))
-SYMBOL = [';', ':', ',', '[', ']', '(', ')', '{', '}', '+', '-', '*', '=', '<']
+SYMBOLS = [';', ':', ',', '[', ']', '(', ')', '{', '}', '+', '-', '*', '=', '<']
 WHITE_SPACES = [chr(32), chr(10), chr(13), chr(9), chr(11), chr(12)]
 KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
@@ -25,7 +25,7 @@ def digits(destination: Node):
 
 
 def symbols(destination: Node):
-    return generate_edges(destination=destination, characters_to_include=SYMBOL)
+    return generate_edges(destination=destination, characters_to_include=SYMBOLS)
 
 
 def letters(destination: Node):
