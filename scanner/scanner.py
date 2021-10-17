@@ -1,19 +1,4 @@
-from .dfa.edge import Edge, generate_edges, digits, letters, get_all_characters, get_letter_characters, \
-    get_digit_character
-from .dfa.node import Node, FinalNUMNode, InvalidNumberNode
 from .symbol_table import SymbolTable
-
-
-def num_dfa(initial_node: Node):
-    node_1 = Node(identifier=2)
-    node_1.add_edges(digits(destination=node_1))
-    initial_node.add_edges(digits(destination=node_1))
-    node_2 = FinalNUMNode(identifier=2, is_end_node=True)
-    invalid_number = InvalidNumberNode()
-    node_1.add_edges(letters(invalid_number))
-    node_1.add_edges(
-        generate_edges(destination=node_2, characters_to_include=get_all_characters(),
-                       characters_to_exclude=get_digit_character() + get_letter_characters()))
 
 
 def c_minus_dfa():
@@ -29,7 +14,7 @@ class Scanner:
         self.forward = None
 
     def get_lexeme(self):
-        pass
+        return self.content[self.lexeme_beginning:self.forward]
 
     def step_scan(self):
         pass

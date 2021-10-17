@@ -3,9 +3,11 @@ from enum import Enum, auto
 
 class TokenType(Enum):
     NUM = auto()
-    SYMBOL = auto()
-    KEYWORD = auto()
     ID = auto()
+    KEYWORD = auto()
+    SYMBOL = auto()
+    COMMENT = auto()
+    WHITE_SPACE = auto()
 
 
 class Token:

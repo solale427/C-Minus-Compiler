@@ -1,5 +1,12 @@
 from scanner.dfa.node import Node
 
+ALL_CHARACTERS = [chr(i) for i in range(32, 127)]
+DIGIT_CHARACTERS = list(range(10))
+LETTER_CHARACTERS = list(map(chr, range(97, 123))) + list(map(chr, range(65, 91)))
+SYMBOL = [';', ':', ',', '[', ']', '(', ')', '{', '}', '+', '-', '*', '=', '<']
+WHITE_SPACES = [chr(32), chr(10), chr(13), chr(9), chr(11), chr(12)]
+KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
+
 
 class Edge:
     def __init__(self, destination, character):
@@ -8,27 +15,24 @@ class Edge:
         self.character = character
 
 
-def get_digit_character():
-    return list(range(9))
-
-
-def get_letter_characters():
-    return list(map(chr, range(97, 123))) + list(map(chr, range(65, 91)))
-
-
-def get_all_characters():
-    return [chr(i) for i in range(32, 127)]
-
-
 def generate_edges(destination, characters_to_include, characters_to_exclude=[]):
     return [Edge(destination, character) for character in characters_to_include
             if character not in characters_to_exclude]
 
 
 def digits(destination: Node):
-    return generate_edges(destination=destination, characters_to_include=range(9))
+    return generate_edges(destination=destination, characters_to_include=DIGIT_CHARACTERS)
 
 
-def letters(destination=None):
+def symbols(destination: Node):
+    return generate_edges(destination=destination, characters_to_include=SYMBOL)
+
+
+def letters(destination: Node):
     return generate_edges(destination=destination,
-                          characters_to_include=get_letter_characters())
+                          characters_to_include=LETTER_CHARACTERS)
+
+
+def white_spaces(destination: Node):
+    return generate_edges(destination=destination,
+                          characters_to_include=WHITE_SPACES)
