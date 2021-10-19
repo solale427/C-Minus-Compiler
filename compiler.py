@@ -1,3 +1,5 @@
 from scanner.scanner import Scanner
 
-Scanner(None).scan_through()
+if __name__ == '__main__':
+    with open('input.txt') as f:
+        Scanner(content=f).scan_through()

@@ -35,7 +35,7 @@ class Node:
             return InvalidNode()
 
     def get_lexeme_from_scanner(self, scanner: "Scanner"):
-        pass
+        return scanner.get_lexeme(number_of_characters_to_remove_from_end=1 if self.has_lookahead is True else 0)
 
     @abc.abstractmethod
     def get_return_value(self, scanner: "Scanner") -> typing.Union["Token", "LexicalError"]:

@@ -7,6 +7,9 @@ class SymbolTable:
 
     def __init__(self):
         self.d = OrderedDict()
+        from scanner.dfa.edge import KEYWORDS
+        for keyword in KEYWORDS:
+            self.add_keyword(keyword)
 
     def add_keyword(self, keyword):
         self.d[keyword] = TokenType.KEYWORD
