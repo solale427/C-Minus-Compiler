@@ -1,3 +1,4 @@
+import abc
 import typing
 
 from .errors import LexicalError
@@ -5,6 +6,7 @@ from .errors import LexicalError
 if typing.TYPE_CHECKING:
     from .edge import Edge
     from ..scanner import Scanner
+    from ..token import Token
 
 
 class Node:
@@ -35,7 +37,8 @@ class Node:
     def get_lexeme_from_scanner(self, scanner: "Scanner"):
         pass
 
-    def get_return_value(self, scanner: "Scanner"):
+    @abc.abstractmethod
+    def get_return_value(self, scanner: "Scanner") -> typing.Union["Token", "LexicalError"]:
         assert self.is_end_node
         raise NotImplementedError
 
@@ -48,4 +51,4 @@ class InvalidNode(Node):
         return self
 
     def get_return_value(self, scanner: "Scanner"):
-        raise LexicalError('Invalid input')
+        return LexicalError(self.get_lexeme_from_scanner(scanner), 'Invalid input')

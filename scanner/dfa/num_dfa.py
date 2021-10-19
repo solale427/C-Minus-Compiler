@@ -20,7 +20,7 @@ class InvalidNumberNode(Node):
         super().__init__(identifier=InvalidNumberNode, is_end_node=True, has_lookahead=False)
 
     def get_return_value(self, scanner: "Scanner"):
-        raise LexicalError('Invalid number')
+        return LexicalError(lexeme=self.get_lexeme_from_scanner(scanner), error_message='Invalid number')
 
 
 def num_dfa():

@@ -19,7 +19,7 @@ class UnmatchedCommentNode(Node):
         super().__init__(identifier=UnmatchedCommentNode, is_end_node=True, has_lookahead=False)
 
     def get_return_value(self, scanner: "Scanner"):
-        raise LexicalError('Unmatched comment')
+        return LexicalError(self.get_lexeme_from_scanner(scanner), 'Unmatched comment')
 
 
 def symbol_dfa():

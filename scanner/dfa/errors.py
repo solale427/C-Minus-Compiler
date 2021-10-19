@@ -1,5 +1,6 @@
-class LexicalError(Exception):
-    def __init__(self, error_message: str):
+class LexicalError:
+    def __init__(self, lexeme: str, error_message: str):
+        self.lexeme = lexeme
         self.error_message = error_message
 
     def __str__(self):
