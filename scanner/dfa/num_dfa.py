@@ -25,7 +25,7 @@ class InvalidNumberNode(Node):
 
 def num_dfa():
     node_1 = Node(identifier=2)
-    node_2 = FinalNUMNode(identifier=2, is_end_node=True)
+    node_2 = FinalNUMNode(identifier=2, is_end_node=True, has_lookahead=True)
     invalid_number = InvalidNumberNode()
     node_1.edges = digits(destination=node_1) + letters(invalid_number) + generate_edges(
         destination=node_2,

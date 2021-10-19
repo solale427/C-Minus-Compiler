@@ -15,5 +15,5 @@ class WhiteSpaceFinalNode(Node):
 
 
 def white_space_dfa():
-    node_14 = WhiteSpaceFinalNode(identifier=14)
+    node_14 = WhiteSpaceFinalNode(identifier=14, is_end_node=True)
     return white_spaces(destination=node_14)

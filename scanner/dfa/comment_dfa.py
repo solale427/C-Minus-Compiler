@@ -44,6 +44,9 @@ def comment_dfa():
     ) + generate_edges(
         destination=node_11,
         characters_to_include=['*']
+    ) + generate_edges(
+        destination=unclosed_comment,
+        characters_to_include=[EOF]
     )
     node_11.edges = generate_edges(
         destination=node_11,

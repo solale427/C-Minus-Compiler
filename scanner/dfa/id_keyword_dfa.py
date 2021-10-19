@@ -17,7 +17,7 @@ class FinalIdKeywordNode(Node):
 
 def id_keyword_dfa():
     node_3 = Node(identifier=3)
-    node_4 = FinalIdKeywordNode(identifier=4, is_end_node=True)
+    node_4 = FinalIdKeywordNode(identifier=4, is_end_node=True, has_lookahead=True)
     node_3.edges = letters(destination=node_3) + digits(destination=node_3) + generate_edges(
         destination=node_4,
         characters_to_include=ALL_CHARACTERS,
