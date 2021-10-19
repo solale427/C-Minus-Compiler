@@ -1,10 +1,12 @@
+import string
+
 from scanner.dfa.node import Node
 
-ALL_CHARACTERS = [chr(i) for i in range(32, 127)]
-DIGIT_CHARACTERS = list(range(10))
-LETTER_CHARACTERS = list(map(chr, range(97, 123))) + list(map(chr, range(65, 91)))
+ALL_CHARACTERS = [chr(i) for i in range(0, 127)]
+DIGIT_CHARACTERS = string.digits
+LETTER_CHARACTERS = string.ascii_letters
 SYMBOLS = [';', ':', ',', '[', ']', '(', ')', '{', '}', '+', '-', '*', '=', '<']
-WHITE_SPACES = [chr(32), chr(10), chr(13), chr(9), chr(11), chr(12)]
+WHITE_SPACES = string.whitespace
 KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
 
