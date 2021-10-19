@@ -7,18 +7,6 @@ if typing.TYPE_CHECKING:
     from ..scanner import Scanner
 
 
-class NodeManager:
-    nodes = {}
-
-    @classmethod
-    def add_node(cls, node):
-        cls.nodes[node.id] = node
-
-    @classmethod
-    def get_node(cls, node_id):
-        return cls.nodes[node_id]
-
-
 class Node:
     nodes = {}
 
@@ -29,7 +17,6 @@ class Node:
         self.is_end_node = is_end_node
         self._edges = {}
         self.has_lookahead = has_lookahead
-        NodeManager.add_node(self)
 
     @property
     def edges(self):
