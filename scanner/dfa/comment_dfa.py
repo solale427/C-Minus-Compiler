@@ -19,8 +19,9 @@ class UnclosedCommentNode(Node):
         super().__init__(identifier=UnclosedCommentNode, is_end_node=True, has_lookahead=False)
 
     def get_return_value(self, scanner: "Scanner"):
-        # TODO: handle long unclosed comments
-        return LexicalError(self.get_lexeme_from_scanner(scanner), 'Unclosed comment')
+        lexeme = self.get_lexeme_from_scanner(scanner)
+        bad_value = lexeme if len(lexeme) < 7 else lexeme[0:7] + '...'
+        return LexicalError(bad_value, 'Unclosed comment')
 
 
 def comment_dfa():

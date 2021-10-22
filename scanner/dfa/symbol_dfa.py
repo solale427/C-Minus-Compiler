@@ -1,6 +1,6 @@
 import typing
 
-from scanner.dfa.edge import generate_edges, ALL_CHARACTERS, SYMBOLS
+from scanner.dfa.edge import generate_edges, SYMBOLS, C_MINUS_CHARACTERS
 from scanner.dfa.errors import LexicalError
 from scanner.dfa.node import Node
 from scanner.token import Token, TokenType
@@ -28,19 +28,19 @@ def symbol_dfa():
     node_7 = SymbolFinalNode(identifier=7, is_end_node=True)
     node_8 = SymbolFinalNode(identifier=8, is_end_node=True, has_lookahead=True)
     node_15 = Node(identifier=15)
-    node_16 = SymbolFinalNode(identifier=15, is_end_node=True)
+    node_16 = SymbolFinalNode(identifier=15, is_end_node=True, has_lookahead=True)
     unmatched_comment = UnmatchedCommentNode()
     node_6.edges = generate_edges(
         destination=node_7,
         characters_to_include=['=']
     ) + generate_edges(
         destination=node_8,
-        characters_to_include=ALL_CHARACTERS,
+        characters_to_include=C_MINUS_CHARACTERS,
         characters_to_exclude=['=']
     )
     node_15.edges = generate_edges(
         destination=node_16,
-        characters_to_include=ALL_CHARACTERS,
+        characters_to_include=C_MINUS_CHARACTERS,
         characters_to_exclude=['/']
     ) + generate_edges(
         destination=unmatched_comment,

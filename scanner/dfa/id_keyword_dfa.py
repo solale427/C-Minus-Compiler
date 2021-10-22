@@ -1,6 +1,7 @@
 import typing
 
-from scanner.dfa.edge import letters, digits, generate_edges, ALL_CHARACTERS, DIGIT_CHARACTERS, LETTER_CHARACTERS
+from scanner.dfa.edge import letters, digits, generate_edges, ALL_CHARACTERS, DIGIT_CHARACTERS, LETTER_CHARACTERS, \
+    C_MINUS_CHARACTERS
 from scanner.dfa.node import Node
 from ..token import Token
 
@@ -20,6 +21,6 @@ def id_keyword_dfa():
     node_4 = FinalIdKeywordNode(identifier=4, is_end_node=True, has_lookahead=True)
     node_3.edges = letters(destination=node_3) + digits(destination=node_3) + generate_edges(
         destination=node_4,
-        characters_to_include=ALL_CHARACTERS,
+        characters_to_include=C_MINUS_CHARACTERS,
         characters_to_exclude=DIGIT_CHARACTERS + LETTER_CHARACTERS)
     return letters(destination=node_3)

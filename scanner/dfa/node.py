@@ -32,7 +32,8 @@ class Node:
         if character in self.edges:
             return self.edges[character].destination
         else:
-            return InvalidNode()
+            from .edge import C_MINUS_CHARACTERS
+            return InvalidNode(has_lookahead=character in C_MINUS_CHARACTERS)
 
     def get_lexeme_from_scanner(self, scanner: "Scanner"):
         return scanner.get_lexeme(number_of_characters_to_remove_from_end=1 if self.has_lookahead is True else 0)
@@ -44,8 +45,8 @@ class Node:
 
 
 class InvalidNode(Node):
-    def __init__(self):
-        super().__init__(identifier=InvalidNode, is_end_node=True, has_lookahead=False)
+    def __init__(self, has_lookahead=False):
+        super().__init__(identifier=InvalidNode, is_end_node=True, has_lookahead=has_lookahead)
 
     def move(self, character):
         return self

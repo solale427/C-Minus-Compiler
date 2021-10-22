@@ -1,6 +1,7 @@
 import typing
 
-from .edge import generate_edges, digits, letters, ALL_CHARACTERS, LETTER_CHARACTERS, DIGIT_CHARACTERS
+from .edge import generate_edges, digits, letters, ALL_CHARACTERS, LETTER_CHARACTERS, DIGIT_CHARACTERS, \
+    C_MINUS_CHARACTERS
 from .errors import LexicalError
 from .node import Node
 from ..token import Token, TokenType
@@ -24,12 +25,12 @@ class InvalidNumberNode(Node):
 
 
 def num_dfa():
-    node_1 = Node(identifier=2)
+    node_1 = Node(identifier=1)
     node_2 = FinalNUMNode(identifier=2, is_end_node=True, has_lookahead=True)
     invalid_number = InvalidNumberNode()
     node_1.edges = digits(destination=node_1) + letters(invalid_number) + generate_edges(
         destination=node_2,
-        characters_to_include=ALL_CHARACTERS,
+        characters_to_include=C_MINUS_CHARACTERS,
         characters_to_exclude=DIGIT_CHARACTERS + LETTER_CHARACTERS
     )
     return digits(destination=node_1)
