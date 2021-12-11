@@ -12,7 +12,7 @@ DIGIT_CHARACTERS = string.digits
 LETTER_CHARACTERS = string.ascii_letters
 SYMBOLS = [';', ':', ',', '[', ']', '(', ')', '{', '}', '+', '-', '*', '=', '<']
 WHITE_SPACES = string.whitespace
-KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
+KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return', 'endif']
 C_MINUS_CHARACTERS = [*string.digits, *string.whitespace, *string.ascii_letters, *SYMBOLS, '/', EOF]
 
 

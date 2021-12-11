@@ -10,7 +10,7 @@ from .dfa.num_dfa import num_dfa
 from .dfa.symbol_dfa import symbol_dfa
 from .dfa.white_space_dfa import white_space_dfa
 from .symbol_table import SymbolTable
-from .token import Token
+from .token import Token, TokenType
 from .writer import Writer
 
 
@@ -89,9 +89,9 @@ class Scanner:
 
     def handle_end_node(self):
         return_value = self.current_node.get_return_value(self)
-        self.handle_return_value(return_value)
         if self.current_node.has_lookahead and self.last_char != '':
             self.go_one_character_back()
+        return return_value
 
     def setup_step_scan(self):
         self.so_far_lexeme = ''
@@ -108,12 +108,16 @@ class Scanner:
                 current_char = EOF
             self.current_node = self.current_node.move(current_char)
 
-        self.handle_end_node()
         if current_char == EOF:
-            raise DoneScanning
+            return EOF
+        return self.handle_end_node()
 
     def setup_scan_through(self):
         self.current_line_number = 0
+
+    def get_lookahead(self):
+        token = self.step_scan()
+        return token
 
     def scan_through(self):
         self.setup_scan_through()
