@@ -1,9 +1,11 @@
 from collections import defaultdict
+from operator import le
 
 from anytree import Node, RenderTree
+from intermediate_code_generator.code_gen import ICG
 
 from parser.writer import ErrorWriter, TreeWriter
-from parser.transition_diagram.diagram import NonTerminal, State, Edge, EMPTY_CHAIN, END_MARKER, Diagram
+from parser.transition_diagram.diagram import ActionState, NonTerminal, State, Edge, EMPTY_CHAIN, END_MARKER, Diagram
 from scanner.dfa.edge import EOF
 from scanner.token import TokenType
 
@@ -30,6 +32,7 @@ class Parser:
         self.init_non_terminal = None
         self._token = None
         self.current_node = None
+        self.ICG = ICG()
 
     @staticmethod
     def check_token_is_terminal(token):
@@ -59,12 +62,16 @@ class Parser:
             start_state_name = grammar_string.split('->')[0].strip()
             nt.add(start_state_name)
             grammars = grammar_string.split('->')[1].strip().split('|')
-            rules.extend([[start_state_name, g.strip().split()] for g in grammars])
+            rules.extend([[start_state_name, g.strip().split()]
+                         for g in grammars])
         return rules, nt
 
-    def extend_grammar(self, rule):
+    def extend_grammar(self, rule, left):
         right = rule[1]
-        start_state = State(is_final=False)
+        if right.startswith("Action"):
+            start_state = ActionState(is_final=False, action_name=left)
+        else:
+            start_state = State(is_final=False)
         node = start_state
         for i, g in enumerate(right):
             next_node = State(is_final=i == len(right) - 1)
@@ -84,19 +91,22 @@ class Parser:
         self.make_first_sets(rules)
         self.make_follow_sets(rules)
         for i in nt:
-            self.non_terminals[i] = NonTerminal(first=self.first_sets[i], follow=self.follow_sets[i],name=i)
+            self.non_terminals[i] = NonTerminal(
+                first=self.first_sets[i], follow=self.follow_sets[i], name=i)
         self.init_non_terminal = self.non_terminals[rules[0][0]]
         self.make_predict_sets(rules)
         for i, rule in enumerate(rules):
             left = rule[0]
-            start = self.extend_grammar(rule)
-            self.non_terminals[left].diagrams.append(Diagram(predict=self.predict_sets[i], first_state=start))
+            start = self.extend_grammar(rule, left)
+            self.non_terminals[left].diagrams.append(
+                Diagram(predict=self.predict_sets[i], first_state=start))
 
     def collect_set(self, initial_set, items, additional_set):
         s = set(initial_set)
         for i, item in enumerate(items):
             if not self.check_token_is_terminal(item):
-                s = s.union(set([it for it in self.first_sets[item] if it != EMPTY_CHAIN]))
+                s = s.union(
+                    set([it for it in self.first_sets[item] if it != EMPTY_CHAIN]))
                 if EMPTY_CHAIN in self.first_sets[item]:
                     if i + 1 < len(items):
                         continue

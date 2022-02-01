@@ -80,6 +80,16 @@ class State:
         return
 
 
+class ActionState(State):
+
+    def __init__(self, is_final, action_name):
+        super().__init__(is_final)
+        self.action_name = action_name
+
+    def procedure(self, parser):
+        parser.ICG.perform_action(self.action_name, parser.lookahead)
+
+
 class Edge:
     def __init__(self, destination: State, token):
         self.destination = destination
