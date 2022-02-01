@@ -21,7 +21,7 @@ class Parser:
     predict_sets = []
     init_non_terminal = None
 
-    def __init__(self, scanner, error_writer_file, tree_writer_file):
+    def __init__(self, scanner, error_writer_file, tree_writer_file, icg):
         self.scanner = scanner
         self.error_writer = ErrorWriter(error_writer_file, self)
         self.tree_writer = TreeWriter(tree_writer_file, self)
@@ -32,11 +32,15 @@ class Parser:
         self.init_non_terminal = None
         self._token = None
         self.current_node = None
-        self.ICG = ICG()
+        self.icg = icg
 
     @staticmethod
     def check_token_is_terminal(token):
         return token[0] == '/' or token == EMPTY_CHAIN or token == END_MARKER
+
+    @property
+    def token(self):
+        return self._token
 
     @property
     def lookahead(self):
@@ -59,6 +63,8 @@ class Parser:
         rules = []
         nt = set()
         for grammar_string in grammar_strings:
+            if not grammar_string.strip():
+                continue
             start_state_name = grammar_string.split('->')[0].strip()
             nt.add(start_state_name)
             grammars = grammar_string.split('->')[1].strip().split('|')
@@ -68,7 +74,7 @@ class Parser:
 
     def extend_grammar(self, rule, left):
         right = rule[1]
-        if right.startswith("Action"):
+        if left.startswith("Action"):
             start_state = ActionState(is_final=False, action_name=left)
         else:
             start_state = State(is_final=False)

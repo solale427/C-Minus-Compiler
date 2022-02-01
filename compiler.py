@@ -1,3 +1,4 @@
+from intermediate_code_generator.code_gen import ICG
 from parser.parser import Parser
 from scanner.scanner import Scanner
 
@@ -9,8 +10,12 @@ if __name__ == '__main__':
             open('parse_tree.txt', 'w') as parse_tree_file:
         s = Scanner(content=f)
         s.setup_scan_through()
-        p = Parser(s, errors_writer_file, parse_tree_file)
+        icg = ICG()
+        icg.setup()
+        p = Parser(s, errors_writer_file, parse_tree_file, icg)
 
         with open('parser/grammar.txt') as grammar:
             p.create_diagram(grammar.readlines())
         v = p.parse()
+        with open('output.txt', 'w') as out:
+            icg.program_block.print_all(out)

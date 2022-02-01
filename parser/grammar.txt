@@ -1,94 +1,94 @@
-Program -> Declaration-list $
+Program -> ActionNewScope Declaration-list $
 Declaration-list -> Declaration Declaration-list
 Declaration-list -> EPSILON 
 Declaration -> Declaration-initial Declaration-prime
-Declaration-initial -> ActionPushValue Type-specifier ID !symbol_semantic
+Declaration-initial -> Type-specifier ActionPushValue /ID
 Declaration-prime -> Fun-declaration-prime 
 Declaration-prime -> Var-declaration-prime
-Var-declaration-prime -> ; 
-Var-declaration-prime -> [ NUM ActionPushValue ] ; 
+Var-declaration-prime -> ActionDecVar /;
+Var-declaration-prime -> /[ ActionPushSize /NUM /] ActionDecVar /;
 
-Fun-declaration-prime ->  ( ActionNewScop Params !func_params_semantic) Compound-stmt ActionEndScope
-Type-specifier -> int 
-Type-specifier -> void
-Params -> int ActionPushValue ID !symbol_semantic Param-prime !is_param_array Param-list 
-Params -> void
-Param-list -> , Param Param-list 
+Fun-declaration-prime ->  ActionDecFunc ActionNewScope /( Params /) Compound-stmt ActionPopFunction ActionEndScope
+Type-specifier -> ActionPushValue /int
+Type-specifier -> ActionPushValue /void
+Params -> ActionPushValue /int ActionPushValue /ID Param-prime ActionDecFuncVar Param-list
+Params -> /void
+Param-list -> /, Param Param-list
 Param-list ->  EPSILON
-Param -> Declaration-initial Param-prime
-Param-prime -> [  ] 
+Param -> Declaration-initial Param-prime ActionDecFuncVar
+Param-prime -> /[ ActionPushSizePrime /]
 Param-prime -> EPSILON
-Compound-stmt -> { Declaration-list Statement-list }
-Statement-list -> Statement Statement-list 
+Compound-stmt -> /{ Declaration-list Statement-list /}
+Statement-list -> Statement Statement-list
 Statement-list -> EPSILON
-Statement -> Expression-stmt 
-Statement ->  Compound-stmt 
+Statement -> Expression-stmt ActionPop
+Statement ->  ActionNewScope Compound-stmt ActionEndScope
 Statement ->  Selection-stmt 
 Statement ->  Iteration-stmt 
 Statement ->  Return-stmt
 
-Expression-stmt -> Expression ; 
-Expression-stmt -> break ActoinBreak ; 
-Expression-stmt -> ;
+Expression-stmt -> Expression /;
+Expression-stmt -> /break ActionBreak /;
+Expression-stmt -> /;
 
-Selection-stmt -> if ( Expression ) ActionLabel Statement Else-stmt
-Else-stmt -> endif ActionJp
-Else-stmt -> else ActionJpfSave Statement endif ActionJp
+Selection-stmt -> /if /( Expression /) ActionLabel Statement Else-stmt
+Else-stmt -> /endif ActionJpf
+Else-stmt -> /else ActionJpfSave Statement /endif ActionJp
 
-Iteration-stmt -> repeat ActionRepeat ActionLabel Statement until ( Expression ) ActionUntil
+Iteration-stmt -> /repeat ActionRepeat Statement /until /( Expression /) ActionUntil
 
-Return-stmt -> return Return-stmt-prime
-Return-stmt-prime -> ; 
-Return-stmt-prime -> Expression ;
+Return-stmt -> /return Return-stmt-prime
+Return-stmt-prime -> /; ActionNoAssignReturn
+Return-stmt-prime -> Expression /; ActionReturn
 
 Expression -> Simple-expression-zegond
-Expression -> ID ActionPid B
+Expression -> ActionPid /ID B
 
-B -> = Expression ActionAssign 
-B ->  [ Expression ] H 
+B -> /= Expression ActionAssign
+B ->  /[ Expression ActionGetIndex /] H
 B ->  Simple-expression-prime
 
-H -> = Expression ActionAssign 
+H -> /= Expression ActionAssign
 H -> G D C
 
 Simple-expression-zegond -> Additive-expression-zegond C
 Simple-expression-prime -> Additive-expression-prime C
 
-C -> Relop ActionPushValue Additive-expression ActionRelOp
+C -> ActionPushValue Relop Additive-expression ActionRelOp
 C -> EPSILON
 
-Relop -> < 
-Relop -> ==
+Relop -> /<
+Relop -> /==
 
 Additive-expression -> Term D
 Additive-expression-prime -> Term-prime D
 Additive-expression-zegond -> Term-zegond D
 
-D ->  Addop ActionPushValue Term ActionAddOp D 
+D ->  ActionPushValue Addop Term ActionAddOp D
 D -> EPSILON
-Addop -> + 
-Addop -> -
+Addop -> /+
+Addop -> /-
 
 Term -> Factor G
 Term-prime -> Factor-prime G
 Term-zegond -> Factor-zegond G
-G -> * Factor !check_type ActionMult G 
+G -> /* Factor ActionMult G
 G -> EPSILON
-Factor -> ( Expression ) 
-Factor -> ActionPid ID Var-call-prime 
-Factor -> NUM
-Var-call-prime -> ( Args !validate_args) 
+Factor -> /( Expression /)
+Factor -> ActionPid /ID Var-call-prime
+Factor -> ActionPushNum /NUM
+Var-call-prime -> /( Args /)
 Var-call-prime -> Var-prime
-Var-prime -> [ Expression ] 
+Var-prime -> /[ Expression /]
 Var-prime ->  EPSILON
-Factor-prime -> ( Args !validate_args) 
+Factor-prime -> /( Args /)
 Factor-prime -> EPSILON
-Factor-zegond -> ( Expression ) 
-Factor-zegond -> NUM #const
-Args -> Arg-list 
+Factor-zegond -> /( Expression /)
+Factor-zegond -> ActionPushNum /NUM
+Args -> Arg-list ActionCallFunction
 Args -> EPSILON
-Arg-list -> Expression !save_arg Arg-list-prime
-Arg-list-prime -> , Expression !save_arg Arg-list-prime 
+Arg-list -> Expression Arg-list-prime
+Arg-list-prime -> /, Expression Arg-list-prime
 Arg-list-prime -> EPSILON
 
 ActionPushValue -> EPSILON
@@ -96,12 +96,25 @@ ActionAddOp -> EPSILON
 ActionMult -> EPSILON
 ActionPid -> EPSILON
 ActionAssign -> EPSILON
-ActionNewScop -> EPSILON
+ActionNewScope -> EPSILON
 ActionEndScope -> EPSILON
 ActionJp -> EPSILON
 ActionJpfSave -> EPSILON
-ActionLabel -> EPLSILON
+ActionLabel -> EPSILON
 ActionUntil -> EPSILON
-ActoinBreak -> EPSILON
+ActionBreak -> EPSILON
 ActionRepeat -> EPSILON
 ActionRelOp -> EPSILON
+ActionDecVar -> EPSILON
+ActionPushSize -> EPSILON
+ActionPushNum -> EPSILON
+ActionCallFunction -> EPSILON
+ActionPop -> EPSILON
+ActionDecFunc -> EPSILON
+ActionDecFuncVar -> EPSILON
+ActionReturn -> EPSILON
+ActionJpf -> EPSILON
+ActionNoAssignReturn -> EPSILON
+ActionGetIndex -> EPSILON
+ActionPushSizePrime -> EPSILON
+ActionPopFunction -> EPSILON

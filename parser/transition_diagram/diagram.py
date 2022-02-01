@@ -87,7 +87,7 @@ class ActionState(State):
         self.action_name = action_name
 
     def procedure(self, parser):
-        parser.ICG.perform_action(self.action_name, parser.lookahead)
+        parser.icg.perform_action(self.action_name, parser.token)
 
 
 class Edge:
