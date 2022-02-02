@@ -1,8 +1,9 @@
 import abc
+from email import message
 import typing
 from collections import OrderedDict, defaultdict
 
-from intermediate_code_generator.errors import NotDeclaredError, ValueTypeMismatchError
+from intermediate_code_generator.errors import NotDeclaredError, ParametersNumberMismatch, ParametersTypeMismatch, ValueTypeMismatchError
 
 if typing.TYPE_CHECKING:
     from intermediate_code_generator.code_gen import ICG
@@ -86,7 +87,13 @@ class FuncSymbol(Symbol):
         return temp
 
     def check_arg_types(self, icg, args):
-        pass
+        if len(self.args_types) != len(args):
+            raise ParametersNumberMismatch(
+                message=f'Mismatch in numbers of arguments of \'{self.name}\'.')
+        for i, type in enumerate(self.args_types):
+            if args[i].type != type:
+                raise ParametersTypeMismatch(
+                    message=f'Mismatch in type of argument {i+1} of \'{self.name}\'. Expected \'{type}\' but got \'{args[i].type}\' instead.')
 
     def call(self, icg: "ICG", args):
         for arg, arg_address in zip(args, self.arg_addresses):
@@ -145,7 +152,8 @@ class OutputFuncSymbol(FuncSymbol):
         assert False
 
     def call(self, icg: "ICG", args):
-        icg.program_block.add_line(icg.program_block.print, args[0].get_value())
+        icg.program_block.add_line(
+            icg.program_block.print, args[0].get_value())
 
 
 class ICGSymbolTable:
@@ -166,7 +174,7 @@ class ICGSymbolTable:
             if symbol := self.table[scope].get(name):
                 return symbol
 
-        raise NotDeclaredError
+        raise NotDeclaredError(message=f'\'{name}\' is not defined.')
 
 
 class Repeat:

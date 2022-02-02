@@ -1,5 +1,10 @@
+from email import message
+
+
 class ICGError(Exception):
-    pass
+    def __init__(self, *args: object, message) -> None:
+        super().__init__(*args)
+        self.message = message
 
 
 class InvalidBreakError(ICGError):
@@ -11,4 +16,20 @@ class ValueTypeMismatchError(ICGError):
 
 
 class NotDeclaredError(ICGError):
+    pass
+
+
+class ParametersNumberMismatch(ICGError):
+    pass
+
+
+class ParametersTypeMismatch(ICGError):
+    pass
+
+
+class OperandsTypeMisMatch(ICGError):
+    pass
+
+
+class IllegalTypeError(ICGError):
     pass

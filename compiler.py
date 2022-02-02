@@ -10,7 +10,7 @@ if __name__ == '__main__':
             open('parse_tree.txt', 'w') as parse_tree_file:
         s = Scanner(content=f)
         s.setup_scan_through()
-        icg = ICG()
+        icg = ICG(s)
         icg.setup()
         p = Parser(s, errors_writer_file, parse_tree_file, icg)
 
@@ -18,4 +18,4 @@ if __name__ == '__main__':
             p.create_diagram(grammar.readlines())
         v = p.parse()
         with open('output.txt', 'w') as out:
-            icg.program_block.print_all(out)
+            icg.program_block.print_all(out, icg.has_semantic_error, icg.error_file)

@@ -1,6 +1,6 @@
 from typing import List
 
-from .errors import ValueTypeMismatchError, InvalidBreakError
+from .errors import ICGError, ValueTypeMismatchError, InvalidBreakError, OperandsTypeMisMatch, IllegalTypeError
 from .symbol_table import (
     ICGSymbolTable,
     Repeat,
@@ -51,29 +51,34 @@ class ProgramBlock:
     def add_line(self, opcode, *operands):
         self.add_empty_line()
         self.change_line(len(self.program) - 1, opcode, *operands)
-    
+
     def change_line(self, line, opcode, *operands):
         self.program[line] = [opcode, *operands]
 
     def get_current_line(self):
         return len(self.program) - 1
 
-    def print_all(self, f):
-        for i, line in enumerate(self.program):
-            x = [' ', ' ', ' ', ' ']
-            for j, operand in enumerate(line):
-                if isinstance(operand, Value):
-                    operand = operand.get_value()
-                x[j] = str(operand)
-            x[0] = '(' + x[0]
-            x[-1] += ' )'
-            print(i, '\t', end='', sep='', file=f)
-            print(*x, sep=', ', file=f)
+    def print_all(self, f, has_error, error_f):
+        if has_error:
+            print('The code has not been generated.', file=f)
+        else:
+            print('The input program is semantically correct.', file=error_f)
+            for i, line in enumerate(self.program):
+                x = [' ', ' ', ' ', ' ']
+                for j, operand in enumerate(line):
+                    if isinstance(operand, Value):
+                        operand = operand.get_value()
+                    x[j] = str(operand)
+                x[0] = '(' + x[0]
+                x[-1] += ' )'
+                print(i, '\t', end='', sep='', file=f)
+                print(*x, sep=', ', file=f)
 
 
 class ICG:
 
-    def __init__(self) -> None:
+    def __init__(self, s) -> None:
+        self.errors_file_path = 'semantic_errors.txt'
         self.scope_count = 0
         self.semantic_stack = SemanticStack()
         self.symbol_table = ICGSymbolTable()
@@ -111,6 +116,9 @@ class ICG:
         self.repeat_stack: List[Repeat] = []
         self.variables_memory_pointer = 100
         self.temporary_memory_pointer = 500
+        self.error_file = open(self.errors_file_path, 'w')
+        self.s = s
+        self.has_semantic_error = False
 
     def setup(self):
         self.program_block.add_empty_line()
@@ -136,9 +144,25 @@ class ICG:
         return getattr(token, 'token_string', None)
 
     def perform_action(self, action_name, token):
-        action = self.actions[action_name]
-        action(self.get_inp_from_token(token))
-        pass
+        try:
+            action = self.actions[action_name]
+            action(self.get_inp_from_token(token))
+            pass
+        except ICGError as e:
+            self.has_semantic_error = True
+            self.error_file.write(
+                f"#{self.s.current_line_number+1} : Semantic Error! " + e.message+"\n")
+            if e.__class__ != IllegalTypeError:
+                temp = self.get_new_temporary_address()
+                self.semantic_stack.push(temp)
+
+    def check_operand_types(self, op1, op2, expected):
+        if op1.type != expected:
+            raise OperandsTypeMisMatch(
+                message=f'Type mismatch in operands, Got {op1.type} instead of {expected}.')
+        if op2.type != expected:
+            raise OperandsTypeMisMatch(
+                message=f'Type mismatch in operands, Got {op2.type} instead of {expected}.')
 
     def pid(self, inp):
         symbol = self.symbol_table.find_symbol(self.scope_stack, inp)
@@ -148,7 +172,9 @@ class ICG:
         temp = self.get_new_temporary_address()
         operand1 = self.semantic_stack.pop()
         operand2 = self.semantic_stack.pop()
-        self.program_block.add_line(self.program_block.mult, operand1, operand2, temp)
+        self.check_operand_types(operand1, operand2, 'int')
+        self.program_block.add_line(
+            self.program_block.mult, operand1, operand2, temp)
         self.semantic_stack.push(temp)
 
     def add_op(self, inp):
@@ -156,6 +182,7 @@ class ICG:
         operand2 = self.semantic_stack.pop()
         op = self.semantic_stack.pop()
         operand1 = self.semantic_stack.pop()
+        self.check_operand_types(operand1, operand2, 'int')
         if op == '-':
             opcode = self.program_block.sub
         else:
@@ -166,8 +193,7 @@ class ICG:
     def assign(self, inp):
         symbol = self.semantic_stack.pop()
         exp = self.semantic_stack.pop()
-        # if symbol.type != type(exp):
-        #     raise ValueTypeMismatchError
+        self.check_operand_types(exp, symbol, symbol.type)
         self.program_block.add_line(self.program_block.assign, symbol, exp)
         self.semantic_stack.push(exp)
 
@@ -177,7 +203,10 @@ class ICG:
     def get_var_from_stack(self):
         var_name = self.semantic_stack.pop()
         var_type = self.semantic_stack.pop()
-        if var_type == 'int[]':
+        if var_type == 'void':
+            raise IllegalTypeError(
+                message=f"Illegal type of void for '{var_name}'.")
+        if var_type == 'array':
             var_size = self.semantic_stack.pop()
         else:
             var_size = 1
@@ -204,12 +233,14 @@ class ICG:
 
     def jp(self, inp):
         index = self.semantic_stack.pop()
-        self.program_block.change_line(index, self.program_block.jp, self.program_block.get_current_line() + 1)
+        self.program_block.change_line(
+            index, self.program_block.jp, self.program_block.get_current_line() + 1)
 
     def jpf(self, inp):
         index = self.semantic_stack.pop()
         exp = self.semantic_stack.pop()
-        self.program_block.change_line(index, self.program_block.jpf, exp, self.program_block.get_current_line() + 1)
+        self.program_block.change_line(
+            index, self.program_block.jpf, exp, self.program_block.get_current_line() + 1)
 
     def jpf_save(self, inp):
         index = self.semantic_stack.pop()
@@ -218,7 +249,8 @@ class ICG:
         self.program_block.add_empty_line()
         self.semantic_stack.push(self.program_block.get_current_line())
 
-        self.program_block.change_line(index, self.program_block.jpf, exp, self.program_block.get_current_line() + 1)
+        self.program_block.change_line(
+            index, self.program_block.jpf, exp, self.program_block.get_current_line() + 1)
 
     def label(self, inp):
         self.program_block.add_empty_line()
@@ -242,7 +274,8 @@ class ICG:
 
     def perform_break(self, inp):
         if not self.repeat_stack:
-            raise InvalidBreakError
+            raise InvalidBreakError(
+                message='No \'repeat ... until\' found for \'break\'.')
         repeat = self.repeat_stack[-1]
         self.program_block.add_empty_line()
         repeat.breaks.append(self.program_block.get_current_line())
@@ -253,6 +286,7 @@ class ICG:
         operand2 = self.semantic_stack.pop()
         op = self.semantic_stack.pop()
         operand1 = self.semantic_stack.pop()
+        self.check_operand_types(op1=operand1, op2=operand2, expected='int')
         if op == '<':
             opcode = self.program_block.lt
         else:
@@ -264,7 +298,7 @@ class ICG:
         var_name = self.semantic_stack.pop()
         var_type = self.semantic_stack.pop()
         assert var_type == 'int'
-        var_type = 'int[]'
+        var_type = 'array'
 
         self.semantic_stack.push(inp)
         self.semantic_stack.push(var_type)
@@ -274,7 +308,7 @@ class ICG:
         var_name = self.semantic_stack.pop()
         var_type = self.semantic_stack.pop()
         assert var_type == 'int'
-        var_type = 'int[]'
+        var_type = 'array'
 
         self.semantic_stack.push(None)
         self.semantic_stack.push(var_type)
@@ -336,7 +370,7 @@ class ICG:
                 value_type=var_type,
                 size=var_size,
                 memory_address=temp.address,
-                is_indirect=var_type == 'int[]',
+                is_indirect=var_type == 'array',
             ),
         )
 
@@ -352,8 +386,8 @@ class ICG:
     def get_index(self, inp):
         index = self.semantic_stack.pop()
         value: VarSymbol = self.semantic_stack.pop()
-        if value.type != 'int[]':
-            raise ValueTypeMismatchError
+        if value.type != 'array':
+            raise ValueTypeMismatchError(message="Bad index.")
 
         temp = self.get_new_temporary_address()
         self.program_block.add_line(
