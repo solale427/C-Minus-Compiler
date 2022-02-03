@@ -28,7 +28,7 @@ class SemanticStack:
         return self._stack[-1]
 
     def first(self):
-        return self._stack[0]
+        return self._stack[0] if len(self._stack) else None
 
 
 class ProgramBlock:
@@ -75,6 +75,65 @@ class ProgramBlock:
                 print(*x, sep=', ', file=f)
 
 
+class RunTimeMemory:
+
+    def __init__(self, program_block: ProgramBlock) -> None:
+        self.program_block = program_block
+        self.top = IndirectValue(
+            address=0
+        )
+
+    def push_func_vars(self, func, caller, temp_vars):
+        if type(func) != OutputFuncSymbol and func.name == caller.name:
+            self._push_func_vars(func=func, temp_vars=temp_vars)
+
+    def pop_func_vars(self, function, caller, temp_vars):
+        if type(function) != OutputFuncSymbol and function.name == caller.name:
+            self._pop_func_vars(function, temp_vars)
+
+    def _push_func_vars(self, func: FuncSymbol, temp_vars):
+        self.program_block.add_line(
+            self.program_block.assign, func.return_address_variable, self.top
+        )
+        self.program_block.add_line(
+            self.program_block.add, ConstValue(
+                4), TemporaryValue(0), TemporaryValue(0)
+        )
+        for var in func.variables[::-1] + temp_vars:
+            # self.program_block.add_line(
+            #     self.program_block.print, TemporaryValue(0))
+            if isinstance(var, IndirectValue):
+                var = TemporaryValue(var.address)
+            self.program_block.add_line(
+                self.program_block.assign, var, self.top
+            )
+            self.program_block.add_line(
+                self.program_block.add, ConstValue(
+                    4), TemporaryValue(0), TemporaryValue(0)
+            )
+
+    def _pop_func_vars(self, func: FuncSymbol, temp_vars):
+        for var in temp_vars[::-1] + func.variables:
+            if isinstance(var, IndirectValue):
+                var = TemporaryValue(var.address)
+            # self.program_block.add_line(
+            #     self.program_block.print, TemporaryValue(0))
+            self.program_block.add_line(
+                self.program_block.sub,
+                TemporaryValue(0), ConstValue(
+                    4), TemporaryValue(0)
+            )
+            self.program_block.add_line(
+                self.program_block.assign, self.top, var)
+        self.program_block.add_line(
+            self.program_block.sub,
+            TemporaryValue(0), ConstValue(
+                4), TemporaryValue(0)
+        )
+        self.program_block.add_line(
+            self.program_block.assign, self.top, func.return_address_variable)
+
+
 class ICG:
 
     def __init__(self, s) -> None:
@@ -119,8 +178,11 @@ class ICG:
         self.error_file = open(self.errors_file_path, 'w')
         self.s = s
         self.has_semantic_error = False
+        self.run_time_memory = RunTimeMemory(program_block=self.program_block)
 
     def setup(self):
+        self.program_block.add_line(
+            self.program_block.assign, ConstValue(4), TemporaryValue(0))
         self.program_block.add_empty_line()
         self.symbol_table.insert_func(
             scope=0,
@@ -136,9 +198,10 @@ class ICG:
 
     def get_new_temporary_address(self, size=1):
         temporary_address = self.get_new_variable_address(size)
-        return TemporaryValue(
+        value = TemporaryValue(
             address=temporary_address,
         )
+        return value
 
     def get_inp_from_token(self, token):
         return getattr(token, 'token_string', None)
@@ -155,6 +218,8 @@ class ICG:
             if e.__class__ != IllegalTypeError:
                 temp = self.get_new_temporary_address()
                 self.semantic_stack.push(temp)
+                # if self.scope_func:
+                #     self.scope_func.push_variable(temp)
 
     def check_operand_types(self, op1, op2, expected):
         if op1.type != expected:
@@ -170,6 +235,8 @@ class ICG:
 
     def mult(self, inp):
         temp = self.get_new_temporary_address()
+        # if self.scope_func:
+        #     self.scope_func.push_variable(temp)
         operand1 = self.semantic_stack.pop()
         operand2 = self.semantic_stack.pop()
         self.check_operand_types(operand1, operand2, 'int')
@@ -179,6 +246,8 @@ class ICG:
 
     def add_op(self, inp):
         temp = self.get_new_temporary_address()
+        # if self.scope_func:
+        #     self.scope_func.push_variable(temp)
         operand2 = self.semantic_stack.pop()
         op = self.semantic_stack.pop()
         operand1 = self.semantic_stack.pop()
@@ -214,15 +283,20 @@ class ICG:
 
     def dec_var(self, inp):
         var_name, var_type, var_size = self.get_var_from_stack()
+        var_symbol = VarSymbol(
+            name=var_name,
+            value_type=var_type,
+            size=var_size,
+            memory_address=self.get_new_variable_address(var_size),
+        )
         self.symbol_table.insert_var(
             scope=self.scope_stack[-1],
-            var_symbol=VarSymbol(
-                name=var_name,
-                value_type=var_type,
-                size=var_size,
-                memory_address=self.get_new_variable_address(var_size),
-            ),
+            var_symbol=var_symbol,
         )
+        self.program_block.add_line(
+            self.program_block.assign, ConstValue(0), var_symbol)
+        if isinstance(self.semantic_stack.first(), FuncSymbol):
+            self.semantic_stack.first().push_variable(var_symbol)
 
     def new_scope(self, inp):
         self.scope_stack.append(self.scope_count)
@@ -283,6 +357,8 @@ class ICG:
 
     def relop(self, inp):
         temp = self.get_new_temporary_address()
+        # if self.scope_func:
+        #     self.scope_func.push_variable(temp)
         operand2 = self.semantic_stack.pop()
         op = self.semantic_stack.pop()
         operand1 = self.semantic_stack.pop()
@@ -329,9 +405,18 @@ class ICG:
         args = args[::-1]
 
         assert function is not None
-        function.check_arg_types(self, args)
 
+        function.check_arg_types(self, args)
+        temp_vars = []
+        for item in self.semantic_stack._stack:
+            if isinstance(item, TemporaryValue) or isinstance(item, IndirectValue):
+                temp_vars.append(item)
+
+        self.run_time_memory.push_func_vars(
+            function, caller=self.semantic_stack.first(), temp_vars=temp_vars)
         temp = function.call(self, args)
+        self.run_time_memory.pop_func_vars(
+            function, caller=self.semantic_stack.first(), temp_vars=temp_vars)
         self.semantic_stack.push(temp)
 
     def pop(self, inp):
@@ -352,10 +437,11 @@ class ICG:
         )
         if name == 'main':
             self.program_block.change_line(
-                0,
+                1,
                 self.program_block.jp,
                 self.program_block.get_current_line() + 1,
             )
+
         self.semantic_stack.push(func_symbol)
 
     def dec_func_var(self, inp):
@@ -363,16 +449,18 @@ class ICG:
         func_symbol: FuncSymbol = self.semantic_stack.last()
 
         temp = func_symbol.add_arg(var_name, var_type, var_size, self)
+        var_symbol = VarSymbol(
+            name=var_name,
+            value_type=var_type,
+            size=var_size,
+            memory_address=temp.address,
+            is_indirect=var_type == 'array',
+        )
         self.symbol_table.insert_var(
             scope=self.scope_stack[-1],
-            var_symbol=VarSymbol(
-                name=var_name,
-                value_type=var_type,
-                size=var_size,
-                memory_address=temp.address,
-                is_indirect=var_type == 'array',
-            ),
+            var_symbol=var_symbol,
         )
+        self.semantic_stack.first().push_variable(var_symbol)
 
     def action_return(self, inp):
         return_value = self.semantic_stack.pop()
@@ -390,6 +478,8 @@ class ICG:
             raise ValueTypeMismatchError(message="Bad index.")
 
         temp = self.get_new_temporary_address()
+        # if self.scope_func:
+        #     self.scope_func.push_variable(temp)
         self.program_block.add_line(
             self.program_block.mult,
             index,

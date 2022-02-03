@@ -44,6 +44,7 @@ class TemporaryValue(Value):
     def __init__(self, address) -> None:
         super().__init__(value_type='int')
         self.address = address
+        self.size = 1
 
     def get_value(self):
         return self.address
@@ -75,6 +76,8 @@ class FuncSymbol(Symbol):
         self.return_address_variable = return_address_variable
         self.return_type = return_type
         self.return_variable = return_variable
+        self.variables = []
+        self.scope_func = None
 
     @property
     def args_count(self):
@@ -85,6 +88,9 @@ class FuncSymbol(Symbol):
         temp = icg.get_new_temporary_address()
         self.arg_addresses.append(temp)
         return temp
+
+    def push_variable(self, var):
+        self.variables.append(var)
 
     def check_arg_types(self, icg, args):
         if len(self.args_types) != len(args):
